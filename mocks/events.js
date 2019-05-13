@@ -1,9 +1,7 @@
 const events = [];
-const createEvent = {
-
-}
+const createEvent = {};
 
 module.exports = {
     events,
     createEvent
-}
+};

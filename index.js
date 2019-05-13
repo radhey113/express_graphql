@@ -7,19 +7,19 @@ require('dotenv').config();
 const express = require(`express`);
 const body_parser = require(`body-parser`);
 const graphqlHTTP = require(`express-graphql`);
-const { server_config } = require(`./config`);
-const { buildSchema } = require('graphql');
+const {server_config} = require(`./config`);
+const {buildSchema} = require('graphql');
 const bcrypt = require(`bcryptjs`);
-const { events } = require(`./mocks/events`);
+const {events} = require(`./mocks/events`);
 const db_connect = require(`./db/connect`);
-const { Event, User } = require('./models')
+const {Event, User} = require(`./models`);
 const app = express();
 
 /**
  * Request body parser
  */
 app.use(body_parser.json());
-app.use(body_parser.urlencoded({ extended: true }));
+app.use(body_parser.urlencoded({extended: true}));
 
 /**
  * Render static file on browser
@@ -27,7 +27,7 @@ app.use(body_parser.urlencoded({ extended: true }));
 app.use(express.static(`public`));
 
 /**
- * All unhandle rejetion comes here 
+ * All unhandle rejetion comes here
  */
 process.on(`unhandledRejection`, rejection => {
     console.log(`Rejection: `);
@@ -35,7 +35,7 @@ process.on(`unhandledRejection`, rejection => {
 });
 
 /**
- * All unhandle exception comes here 
+ * All unhandle exception comes here
  */
 process.on(`uncaughtException`, exception => {
     console.log(`Exception: `);
@@ -45,11 +45,11 @@ process.on(`uncaughtException`, exception => {
 
 /**
  * Graphql end point intializatoin
- * Graph ql operation type 
+ * Graph ql operation type
  *        1: Query
  *        2: Mutation
  *        3: Subscription
- * 
+ *
  * type is just like the type of data which your method will return
  * query is used for getting data from the server, we need to send the query as a sting and graph ql will parse it to understand
  * mutations is used to manupulate the data, it uses the input type of graphql to get the inputs
@@ -110,7 +110,7 @@ app.use('/graphql', graphqlHTTP({
         },
         users: async () => {
             try {
-                let users = await User.find({}, { password: 0 }).lean();
+                let users = await User.find({}, {password: 0}).lean();
                 return users;
             } catch (error) {
                 throw error;
@@ -134,14 +134,14 @@ app.use('/graphql', graphqlHTTP({
 
                 user.createdEvents.push(event);
                 await user.save();
-                return { ...event._doc };
+                return {...event._doc};
             } catch (error) {
                 throw error;
             }
         },
         createUser: async (args) => {
             try {
-                let isExist = await User.findOne({ email: args.userInput.email }).lean();
+                let isExist = await User.findOne({email: args.userInput.email}).lean();
                 if (isExist) {
                     throw new Error('User already exist')
                 }
@@ -151,7 +151,7 @@ app.use('/graphql', graphqlHTTP({
                 let user = new User(args.userInput);
                 user = await user.save();
                 delete user._doc.password;
-                return { ...user._doc, _id: user.id }
+                return {...user._doc, _id: user.id}
             } catch (error) {
                 throw error;
             }
@@ -165,9 +165,9 @@ app.use('/graphql', graphqlHTTP({
         const data = err.originalError.data;
         const message = err.message || `Something went wrong!`;
         const status = err.originalError.code || 500;
-        return { message, status, data };
+        return {message, status, data};
     }
-}))
+}));
 
 /**
  * Connect mongodb
@@ -177,7 +177,7 @@ db_connect().then(result => {
     start_server(app);
 }).catch(error => {
     console.log(`Error:  ${JSON.stringify(error)}`);
-})
+});
 
 /**
  * Server listen
@@ -186,4 +186,4 @@ const start_server = () => {
     app.listen(server_config.port, () => {
         console.log(`Server is running ${server_config.port}`)
     });
-}
+};

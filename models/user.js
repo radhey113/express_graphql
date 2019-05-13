@@ -8,17 +8,17 @@ const mongoose = require(`mongoose`);
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    email: { type: String, required: true },
-    password: { type: String, required: true },
+    email: {type: String, required: true},
+    password: {type: String, required: true},
     createdEvents: [
-        { type: Schema.Types.ObjectId, ref: 'event' }
+        {type: Schema.Types.ObjectId, ref: `event`}
     ]
 }, {
-        timestamps: {
-            createdAt: `createdAt`,
-            updatedAt: `updatedAt`
-        }
-    })
+    timestamps: {
+        createdAt: `createdAt`,
+        updatedAt: `updatedAt`
+    }
+});
 
 /**
  * Export event model

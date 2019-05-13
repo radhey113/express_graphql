@@ -4,8 +4,8 @@
  * Default setting
  */
 let server_config = {
-    host: process.env.SERVER_HOST || 'localhost',
-    api_secret: process.env.API_SECRETE || 'jdslakd43rrwef2qwr2oifj2fewij498f4ih8fur',
+    host: process.env.SERVER_HOST || `localhost`,
+    api_secret: process.env.API_SECRETE || `jdslakd43rrwef2qwr2oifj2fewij498f4ih8fur`,
     db_username: process.env.MONGO_USER,
     db_password: process.env.MONGO_PASSWORD
 };
@@ -19,9 +19,9 @@ server_config.db_connection_string = `mongodb://localhost/graphql_test`;
 /**
  * Select server config according to the deployemnt environment (prod/stagging/dev)
  */
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === `production`) {
     server_config.port = process.env.SERVER_PORT || 4001;
-} else if (process.env.NODE_ENV === 'stagging') {
+} else if (process.env.NODE_ENV === `stagging`) {
     server_config.port = process.env.SERVER_PORT || 4002;
 } else {
     server_config.port = 4003;
