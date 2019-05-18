@@ -8,11 +8,8 @@ const express = require(`express`);
 const body_parser = require(`body-parser`);
 const graphqlHTTP = require(`express-graphql`);
 const {server_config} = require(`./config`);
-const {buildSchema} = require('graphql');
-const bcrypt = require(`bcryptjs`);
-const {events} = require(`./mocks/events`);
+const { resolvers, graphqlSchemas } = require(`./graphql`);
 const db_connect = require(`./db/connect`);
-const {Event, User} = require(`./models`);
 const app = express();
 
 /**
@@ -56,107 +53,8 @@ process.on(`uncaughtException`, exception => {
  * subscription has not used here, but these are used for the realtime communication between server and client
  */
 app.use('/graphql', graphqlHTTP({
-    schema: buildSchema(`
-
-        type User {
-            _id: ID!,
-            email: String!
-            password: String
-        }
-
-        type Event {
-            _id: ID!
-           title: String!
-           description: String! 
-           price: Float!
-           date: String!
-        }
-
-        input EventInput {
-            title: String!
-            description: String!
-            price: Float!
-            date: String!
-        }
-
-        input UserInput {
-            email: String!
-            password: String!
-        }
-
-        type RootQuery {
-            events: [Event!]!
-            users: [User!]!
-        }
-
-        type RootMutation {
-            createEvents(eventInput: EventInput): Event
-            createUser(userInput: UserInput): User
-        }
-
-        schema {
-            query: RootQuery
-            mutation: RootMutation
-        }
-    `),
-    rootValue: {
-        events: async () => {
-            try {
-                let events = await Event.find({}).lean();
-                return events;
-            } catch (error) {
-                throw error;
-            }
-        },
-        users: async () => {
-            try {
-                let users = await User.find({}, {password: 0}).lean();
-                return users;
-            } catch (error) {
-                throw error;
-            }
-        },
-        createEvents: async (args) => {
-            try {
-                let event = new Event({
-                    title: args.eventInput.title,
-                    description: args.eventInput.description,
-                    price: +args.eventInput.price,
-                    date: new Date(args.eventInput.date),
-                    creator: `5ccf37194f5381090e1251b3`
-                });
-
-                event = await event.save();
-                let user = await User.findById(`5ccf37194f5381090e1251b3`);
-                if (!user) {
-                    throw new Error(`User not found!`);
-                }
-
-                user.createdEvents.push(event);
-                await user.save();
-                return {...event._doc};
-            } catch (error) {
-                throw error;
-            }
-        },
-        createUser: async (args) => {
-            try {
-                let isExist = await User.findOne({email: args.userInput.email}).lean();
-                if (isExist) {
-                    throw new Error('User already exist')
-                }
-                let password = await bcrypt.hash(args.userInput.password, 10);
-                args.userInput.password = password;
-
-                let user = new User(args.userInput);
-                user = await user.save();
-                delete user._doc.password;
-                return {...user._doc, _id: user.id}
-            } catch (error) {
-                throw error;
-            }
-        }
-    },
+    schema: graphqlSchemas,
+    rootValue: resolvers,
     graphiql: true,
     customFormatErrorFn(err) {
         if (!err.originalError) {
