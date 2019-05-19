@@ -1,7 +1,7 @@
 `use strict`;
-const {User, Event} = require(`../../models`);
+const {User, Event, Booking} = require(`../../models`);
 const bcrypt = require(`bcryptjs`);
-const { MESSAGE, SERVER } = require(`../../utils/constants`);
+const {MESSAGE, SERVER} = require(`../../utils/constants`);
 
 /**
  * Return user data by id
@@ -93,6 +93,43 @@ class AllResolver {
             user = await user.save();
             delete user._doc.password;
             return {...user._doc, _id: user.id}
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async bookings() {
+        try {
+            let allBoolings = await Booking.find().lean();
+            return allBoolings.map(booking => {
+                return {
+                    ...booking,
+                    createdAt: new Date(booking.createdAt).toISOString(),
+                    updatedAt: new Date(booking.updatedAt).toISOString()
+                }
+            })
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async bookEvent(args) {
+        try {
+            let event = await Event.findById(args.eventId).lean();
+            if (!event) {
+                throw new Error('Event not exists!');
+            }
+            const booking = new Booking({
+                user: `5ce064a825f359104f65adb1`,
+                event: event
+            });
+
+            let result = await booking.save();
+            return {
+                ...result._doc,
+                createdAt: new Date(result._doc.createdAt).toISOString(),
+                updatedAt: new Date(result._doc.updatedAt).toISOString(),
+            }
         } catch (error) {
             throw error;
         }
