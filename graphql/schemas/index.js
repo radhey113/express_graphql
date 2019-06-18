@@ -1,7 +1,6 @@
 `use strict`;
 
 const {buildSchema} = require('graphql');
-console.log('buildSchema', buildSchema);
 module.exports = buildSchema(`
 
         type User {
